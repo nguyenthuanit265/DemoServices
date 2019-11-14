@@ -20,21 +20,20 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.PASSIVE_PROVIDER;
+
 public class MyService6 extends Service {
+    boolean isRunning=true;
     String GPS_FILTER = "matos.action.GPSFIX";
     Thread serviceThread;
     LocationManager lm;
     GPSListener myLocationListener;
-//    private Handler handler = new Handler() {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            super.handleMessage(msg);
-//            Log.e("MyService5Async-Handler", "Handler got from MyService5Async: "
-//                    + (String)msg.obj);
-//        }
-//    };
+    LocationListener tmp;
+
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
@@ -51,7 +50,6 @@ public class MyService6 extends Service {
         Log.e("GpsService-onStart", "I am alive-GPS!");
         serviceThread = new Thread(new Runnable() {
             public void run() {
-                // getGPSFix_Version1(); // uses NETWORK provider
                 getGPSFix_Version2(); // uses GPS chip provider
             }// run
         });
@@ -61,31 +59,28 @@ public class MyService6 extends Service {
     public void getGPSFix_Version2() {
         try {
             Looper.prepare();
-// try to get your GPS location using the
+            while (isRunning) {            // try to get your GPS location using the
 // LOCATION.SERVIVE provider
-
+                lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 // This listener will catch and disseminate location updates
-            myLocationListener = new GPSListener();
+                myLocationListener = new GPSListener();
+
 // define update frequency for GPS readings
-            long minTime = 2000; // 2 seconds
-            float minDistance = 5; // 5 meter
+                long minTime = 1000; // 0.2 seconds
+                float minDistance = 5; // 5 meter
 // request GPS updates
-            lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    Activity#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for Activity#requestPermissions for more details.
-                Toast.makeText(this,"aaaaaaaa",Toast.LENGTH_LONG).show();
-                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, myLocationListener);
 
+
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "First enable LOCATION ACCESS in settings.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                Location loc = lm.getLastKnownLocation(PASSIVE_PROVIDER);
+                //Location loc = lm.getLastKnownLocation(GPS_PROVIDER);
+                myLocationListener.onLocationChanged(loc);
+                serviceThread.sleep(1000);
             }
-
-           // LocationManager.NETWORK_PROVIDER, 5000, 0, locationListener
-
             Looper.loop();
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,10 +90,11 @@ public class MyService6 extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         Log.e("GpsService-onDestroy", "I am dead-GPS");
         try {
             lm.removeUpdates(myLocationListener);
-           // isRunning = false;
+            isRunning=false;
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -110,7 +106,7 @@ public class MyService6 extends Service {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
 // assemble data bundle to be broadcasted
-            Intent myFilteredResponse = new Intent(GPS_FILTER);
+            Intent myFilteredResponse = new Intent("matos.action.GPSFIX");
             myFilteredResponse.putExtra("latitude", latitude);
             myFilteredResponse.putExtra("longitude", longitude);
             myFilteredResponse.putExtra("provider", location.getProvider());

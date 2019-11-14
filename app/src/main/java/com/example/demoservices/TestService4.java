@@ -76,9 +76,7 @@ public class TestService4 extends Activity implements View.OnClickListener {
                 double latitude = intent.getDoubleExtra("latitude", -1);
                 double longitude = intent.getDoubleExtra("longitude", -1);
                 String provider = intent.getStringExtra("provider");
-                String service6Data = provider
-                        + " lat: " + Double.toString(latitude)
-                        + " lon: " + Double.toString(longitude);
+                String service6Data = provider + " lat: " + Double.toString(latitude) + " lon: " + Double.toString(longitude);
                 Log.e("MAIN>>>", "Data received from Service6: " + service6Data);
                 txtMsg.append("\nService6Data: > " + service6Data);
             }

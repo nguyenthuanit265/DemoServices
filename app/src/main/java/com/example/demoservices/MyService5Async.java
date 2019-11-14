@@ -51,7 +51,6 @@ public class MyService5Async extends Service {
     public void onDestroy() {
         //super.onDestroy();
         Log.e ("Service5Async-onDestroy", "I am dead-5-Async");
-       // Log.e ("MyService5Async-onDestroy", "I am alive-5Async!");
         isRunning = false;
     }//onDestroy
 
@@ -59,7 +58,7 @@ public class MyService5Async extends Service {
                 Integer, Integer, Integer > {
         @Override
         protected Integer doInBackground(Integer... params) {
-            for (int i=params[0]; i<params[1]; i++){
+            for (int i=params[0]; i<params[1]&&isRunning; i++){
                 Integer fibn = fibonacci(i);
                 publishProgress(i, fibn);
             }
