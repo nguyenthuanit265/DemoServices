@@ -1,14 +1,13 @@
 package com.example.demoservices;
 
 
-
-
 import android.Manifest;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -27,7 +26,7 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
 
 public class MyService6 extends Service {
-    boolean isRunning=true;
+    boolean isRunning = true;
     String GPS_FILTER = "matos.action.GPSFIX";
     Thread serviceThread;
     LocationManager lm;
@@ -56,6 +55,8 @@ public class MyService6 extends Service {
         serviceThread.start();
     }// onStart
 
+
+
     public void getGPSFix_Version2() {
         try {
             Looper.prepare();
@@ -66,8 +67,8 @@ public class MyService6 extends Service {
                 myLocationListener = new GPSListener();
 
 // define update frequency for GPS readings
-                long minTime = 1000; // 0.2 seconds
-                float minDistance = 5; // 5 meter
+                long minTime = 2000; // 2 seconds
+                float minDistance = 0; // 5 meter
 // request GPS updates
 
 
@@ -76,10 +77,10 @@ public class MyService6 extends Service {
                     return;
                 }
 
+                lm.requestLocationUpdates(PASSIVE_PROVIDER, minTime, minDistance, myLocationListener);
                 Location loc = lm.getLastKnownLocation(PASSIVE_PROVIDER);
-                //Location loc = lm.getLastKnownLocation(GPS_PROVIDER);
                 myLocationListener.onLocationChanged(loc);
-                serviceThread.sleep(1000);
+                serviceThread.sleep(2000);
             }
             Looper.loop();
         } catch (Exception e) {
